@@ -1,0 +1,40 @@
+<configure
+   xmlns="http://namespaces.zope.org/zope"
+   xmlns:zojax="http://namespaces.zope.org/zojax"
+   i18n_domain="zojax.portlets">
+
+  <zojax:portlet
+     name="portlet.container"
+     title="Container"
+     class=".portlet.ContainerPortlet"
+     schema=".interfaces.IContainerPortlet" />
+
+  <class class=".portlet.ContainerPortlet">
+    <implements interface="zojax.portlet.browser.interfaces.IPortletManagerConfigMarker" />
+  </class>
+  
+  <adapter
+     for=".interfaces.IContainerPortlet zope.publisher.interfaces.http.IHTTPRequest"
+     name="public_absolute_url"
+     factory=".portlet.PortletContainerPublicAbsoluteURL"
+     permission="zope.Public"
+     provides="zope.traversing.browser.interfaces.IAbsoluteURL" />
+  
+  <class class=".portlet.PortletContainerPublicAbsoluteURL">
+    <allow interface="zope.traversing.browser.interfaces.IAbsoluteURL"/>
+  </class>
+
+  <!-- portlets manager -->
+  <zojax:pagelet
+     name="index.html"
+     for=".interfaces.IContainerPortlet"
+     class="zojax.portlet.browser.manager.PortletManagerConfiguration"
+     permission="zojax.ManagePortlets"
+     template="manager.pt" />
+
+  <zojax:pagelet
+     type="portlet.manager.view"
+     template="portlet.pt"
+     for=".portlet.ContainerPortlet"/>
+
+</configure>

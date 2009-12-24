@@ -1,0 +1,128 @@
+===================
+HTML Source portlet
+===================
+
+    >>> from zope import component, interface
+    >>> from zope.testbrowser.testing import Browser
+    >>> from zojax.extensions.interfaces import IExtensible
+    >>> from zope.app.testing.functional import getRootFolder
+    >>> from zojax.portlets.container.tests.tests import TestContent
+
+    >>> root = getRootFolder()
+    >>> interface.alsoProvides(root, IExtensible)
+
+    >>> content = TestContent(title=u'Test content')
+    >>> content.text = u'Test content body text.'
+    >>> root['content'] = content
+    >>> content2 = TestContent(title=u'Test content 2')
+    >>> content2.text = u'Test content 2 body text.'
+    >>> root['content']['content2'] = content2
+
+change portlet settings
+
+    >>> actor = Browser()
+    >>> actor.handleErrors = False
+    >>> actor.addHeader("Authorization", "Basic mgr:mgrpw")
+    >>> actor.open("http://localhost/content/++extensions++/")
+    >>> actor.getLink('Portlets').click()
+
+set portlets manager
+
+    >>> actor.getLink('Left column portlets').click()
+    >>> actor.open('http://localhost/content/++extensions++/portlets/columns.left/?form.widgets.portletIds:list=portlet.container&form.buttons.save=Save&form.widgets.status=1')
+
+setup portlet
+
+    >>> actor.open('http://localhost/content/++extensions++/portlets/columns.left/')
+    >>> actor.getLink('Container').click()
+    >>> actor.open('http://localhost/content/++extensions++/portlets/columns.left/portlet.container/?form.widgets.portletIds:list=portlet.test&form.widgets.propagate:list=true&form.buttons.save=Save&form.widgets.status=1')
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/'
+    >>> actor.getControl(name="form.widgets.portletIds.to").options
+    ['portlet.test']
+
+we setup contained portlet
+
+    >>> actor.getLink('Test').click()
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/portlet.test/'
+    >>> actor.getControl('Label').value = 'Test Label Portlet'
+    >>> actor.getControl('Save').click()
+    >>> actor.getLink('Back to "Container" portlets manager.').click()
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/'
+
+check portlet
+
+    >>> user = Browser()
+    >>> user.handleErrors = False
+    >>> user.addHeader("Authorization", "Basic mgr:mgrpw")
+    >>> user.open("http://localhost/content/test.html")
+    >>> print user.contents
+    <html>
+    ...
+    ...<div class="portlet-container-wrapper">
+      <span>Test Label Portlet</span>
+    </div>...
+    ...
+    </html>
+
+Propagation
+-----------
+
+We have special flag to propagate or no to propagate portlet container to contained objects
+
+    >>> actor.open('http://localhost/content/++extensions++/portlets/columns.left/portlet.container/?form.widgets.portletIds:list=portlet.test&form.widgets.propagate:list=false&form.buttons.save=Save&form.widgets.status=1')
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/'
+
+And we should not see portlet here
+
+    >>> user.open("http://localhost/content/content2/test.html")
+    >>> '<div class="portlet-container-wrapper">' not in user.contents
+    True
+
+We enable propagation and see it back
+
+    >>> actor.open('http://localhost/content/++extensions++/portlets/columns.left/portlet.container/?form.widgets.portletIds:list=portlet.test&form.widgets.propagate:list=true&form.buttons.save=Save&form.widgets.status=1')
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/'
+
+    >>> user.open("http://localhost/content/content2/test.html")
+    >>> '<div class="portlet-container-wrapper">' in user.contents
+    True
+
+We can use container recursively
+
+    >>> actor.open('http://localhost/content/++extensions++/portlets/columns.left/portlet.container/?form.widgets.portletIds:list=portlet.container&form.widgets.propagate:list=true&form.buttons.save=Save&form.widgets.status=1')
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/'
+    >>> actor.getControl(name="form.widgets.portletIds.to").options
+    ['portlet.container']
+
+we setup contained container portlet
+
+    >>> actor.getLink('Container').click()
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/portlet.container/'
+
+    >>> actor.open('http://localhost/content/++extensions++/portlets/columns.left/portlet.container/portlet.container/?form.widgets.portletIds:list=portlet.test&form.widgets.propagate:list=true&form.buttons.save=Save&form.widgets.status=1')
+    >>> actor.getControl(name="form.widgets.portletIds.to").options
+    ['portlet.test']
+
+we setup contained test portlet
+
+    >>> actor.getLink('Test').click()
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/portlet.container/portlet.test/'
+
+    >>> actor.getControl('Label').value = 'Test Label Portlet Contained'
+    >>> actor.getControl('Save').click()
+    >>> actor.getLink('Back to "Container" portlets manager.').click()
+    >>> actor.url
+    'http://localhost/content/++extensions++/portlets/columns.left/portlet.container/portlet.container/'
+
+Public absolute url:
+    >>> actor.open('http://localhost/content/context.html/presentation/pm-columns.left/portlet.container/portlet.container/public_absolute_url/++attribute++__call__')
+    >>> print actor.contents
+    http://localhost/content/portlets/columns.left/portlet.container/portlet.container
