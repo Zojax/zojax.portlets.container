@@ -1,0 +1,5 @@
+<div class="portlet-container-wrapper">
+  <tal:block repeat="portlet context/portlets">
+    <tal:block content="structure portlet/updateAndRender" />
+  </tal:block>
+</div>

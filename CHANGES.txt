@@ -1,0 +1,26 @@
+=======
+CHANGES
+=======
+
+0.2.1 (2009-10-22)
+------------------
+
+- Moved portlet public absolute url from zojax.portlet
+
+
+0.2.0 (2009-08-12)
+------------------
+
+- Div wrapper to help styling added
+
+- Copyright changed to 'Zope Foundation and Contributors'
+
+- Propagation flag support added
+
+- Update test for chameleon enabled setup
+
+
+0.1.0 (2009-05-20)
+------------------
+
+- Initial release
