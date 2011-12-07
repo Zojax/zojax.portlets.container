@@ -21,7 +21,7 @@ from zope.i18n import MessageFactory
 from zojax.portlet.interfaces import IPortletManagerConfiguration
 from zojax.portlet.browser.interfaces import IPortletConfigMarker
 
-_ = MessageFactory('zojax.portlets')
+_ = MessageFactory('zojax.portlets.container')
 
 
 class IContainerPortlet(IPortletManagerConfiguration, IPortletConfigMarker):
