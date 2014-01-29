@@ -1,1 +1,3 @@
-<span tal:content="view/label" />
+<div class="portlet-container-wrapper">
+    <span tal:content="view/label" />
+</div>
